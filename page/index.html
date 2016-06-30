@@ -1,0 +1,24 @@
+<h1>Moodle Statistik</h1>
+
+<?php include_once './incs/global/legend.php'; ?>
+
+<div id="global_info" style="display: none;">
+    <h2>Globale Informationen</h2>
+
+    <?php include_once './incs/global/global_data.php'; ?>
+
+    <?php include_once './incs/global/semester_table.php'; ?>
+</div>
+
+<div id="detail_output" style="display: block;">
+    <h2 data-section="output-area">Details: Semester- / Fakultätsdaten</h2>
+    <div class="output-config">
+        <label for="combined_selection">Kombinierte Auswertung?</label><input type="checkbox" id="combined_selection" onchange="$(this).next().children().toggle();"/>
+        <span>
+            <label style="display: none;">Summe aller Kurse:</label><span id="sum_combined_courses" style="display: none;"></span>
+        </span>
+    </div>
+    <div id="sortable">
+        <button id="addCategoryOutput" onclick="addNewCategoryOutput();" title="Weitere Auswertung hinzuf&uuml;gen"><span class="fa fa-plus"></span></button>
+    </div>
+</div>

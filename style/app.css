@@ -1,0 +1,325 @@
+body {
+    /* font: 100%/1.61803399 sans-serif; */
+    font: 81.25%/1.434782609 sans-serif;
+    font-family: Verdana, Arial, sans-serif;
+    margin: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+a {
+    text-decoration: none;
+}
+h3 small {
+    font-weight: normal;
+    font-size: 70%;
+    font-style: italic;
+}
+
+/* MENU */
+.menu-panel li {
+    display: inline-block;
+}
+.menu-panel .menu {
+    padding-left: 0;
+}
+
+.main-menu {
+    margin-left: -10px;
+    margin-right: -10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: #002143;
+    background-color: #a0af00;
+}
+.main-menu a {
+    color: #002143;
+}
+.main-menu > .menu {
+    margin: 0;
+}
+
+.main-menu > .menu a {
+    display: inline-block;
+    padding: 5px 10px;
+    box-shadow: 0 0 10px #8a8a8a;
+}
+.main-menu > .menu a:hover,
+.main-menu > .menu a:focus {
+    color: #f2f1f0;
+}
+.main-menu > .menu .active {
+    color: #f2f1f0;
+}
+
+
+
+
+
+#semesterTableView, 
+#globalSumOfTypes {
+    display: inline-block;
+    margin-right: 3em;
+    vertical-align: top;
+}
+
+#legend {
+    position: fixed;
+    right: 0;
+    top: 0px;
+    display: none;
+    margin-right: 3em;
+    padding: 0 10px 10px 10px;
+    background-color: #e7e7e7;
+    z-index: 100;
+}
+
+#semesterTableView thead {
+    border-bottom: 1px solid black;
+}
+#semesterTableView thead th:first-child {
+    vertical-align: bottom;
+}
+
+.faculty {
+    background-color: #e7e7e7;
+}
+.faculty-start {
+    border-left: 1px solid black;
+}
+.faculty-end {
+    border-right: 1px solid black;
+}
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+table th,
+table td {
+    padding: 3px 6px;
+}
+table.sort-enabled thead th {
+    cursor: pointer;
+}
+thead th:first-child {
+    text-align: left;
+}
+thead th + th {
+    text-align: center;
+}
+thead th .fa-sort {
+    margin-left: 5px;
+    font-size: 70%;
+}
+thead th:hover .fa-sort {
+    color: #999;
+}
+
+tbody td + td {
+    text-align: center;
+}
+
+
+
+.output-config {
+    margin-bottom: 10px;
+}
+
+.output-config label {
+    margin-right: 5px;
+}
+
+.output-config #combined_selection {
+    margin-right: 10px;
+}
+
+
+.category-output {
+    display: inline-block;
+    max-width: 300px;
+    margin: 0 5px 10px 5px;
+    padding: 0 5px;
+    vertical-align: top;
+}
+.category-output:nth-child(odd) {
+    background-color: #d4dadf;
+}
+.category-output:nth-child(even) {
+    background-color: #dbe2e9;
+}
+.category-output header {
+    margin: 0 -5px;
+    padding: 0 5px;
+    color: #F2F1F0;
+    background-color: #003A76;
+}
+
+.category-output .action-panel {
+    margin: 0 -5px;
+    color: #F2F1F0;
+    background-color: #002143;
+}
+.category-output .action-panel button {
+    border: 0 none;
+    background-color: transparent;
+    cursor: pointer;
+}
+.category-output .action-panel button .fa-trash {
+    color: #F2F1F0;
+}
+
+.category-output select {
+    max-width: 100%;
+}
+.category-output .target-out-choice input {
+    display: none;
+}
+.category-output .target-out-choice input:checked + label {
+    color: #a0af00;
+}
+
+.category-output .moduleDetails-chart-button-panel,
+.category-output .courseModuleRelation-chart-button-panel {
+    margin-top: 20px;
+}
+
+/* hide all box */
+.category-output .box {
+    display: none;
+}
+
+.category-output h3 {
+    cursor: pointer;
+}
+
+.move {
+    cursor: move;
+}
+
+/*******************************************************************************
+THROBBER
+*/
+@-webkit-keyframes throbber {
+    0% {
+        background: #d4dadf;
+    }
+    10% {
+        background: #002143;
+    }
+    40% {
+        background: #d4dadf;
+    }
+}
+@-moz-keyframes throbber {
+    0% {
+        background: #d4dadf;
+    }
+    10% {
+        background: #002143;
+    }
+    40% {
+        background: #d4dadf;
+    }
+}
+@-o-keyframes throbber {
+    0% {
+        background: #d4dadf;
+    }
+    10% {
+        background: #002143;
+    }
+    40% {
+        background: #d4dadf;
+    }
+}
+@keyframes throbber {
+    0% {
+        background: #d4dadf;
+    }
+    10% {
+        background: #002143;
+    }
+    40% {
+        background: #d4dadf;
+    }
+}
+
+/* Styles for old versions of IE */
+.throbber {
+    display: inline-block;
+    font-family: sans-serif;
+    font-weight: 100;
+}
+
+/* :not(:required) hides these rules from IE9 and below */
+.throbber:not(:required) {
+    -webkit-animation: throbber 2000ms 300ms infinite ease-out;
+    -khtml-animation: throbber 2000ms 300ms infinite ease-out;
+    -moz-animation: throbber 2000ms 300ms infinite ease-out;
+    -ms-animation: throbber 2000ms 300ms infinite ease-out;
+    -o-animation: throbber 2000ms 300ms infinite ease-out;
+    animation: throbber 2000ms 300ms infinite ease-out;
+    background: #d4dadf;
+    display: inline-block;
+    position: relative;
+    text-indent: -9999px;
+    width: 0.9em;
+    height: 1.5em;
+    margin: 0 1.6em;
+}
+.throbber:not(:required):before, .throbber:not(:required):after {
+    background: #d4dadf;
+    content: '\x200B';
+    display: inline-block;
+    width: 0.9em;
+    height: 1.5em;
+    position: absolute;
+    top: 0;
+}
+.throbber:not(:required):before {
+    -webkit-animation: throbber 2000ms 150ms infinite ease-out;
+    -khtml-animation: throbber 2000ms 150ms infinite ease-out;
+    -moz-animation: throbber 2000ms 150ms infinite ease-out;
+    -ms-animation: throbber 2000ms 150ms infinite ease-out;
+    -o-animation: throbber 2000ms 150ms infinite ease-out;
+    animation: throbber 2000ms 150ms infinite ease-out;
+    left: -1.6em;
+}
+.throbber:not(:required):after {
+    -webkit-animation: throbber 2000ms 450ms infinite ease-out;
+    -khtml-animation: throbber 2000ms 450ms infinite ease-out;
+    -moz-animation: throbber 2000ms 450ms infinite ease-out;
+    -ms-animation: throbber 2000ms 450ms infinite ease-out;
+    -o-animation: throbber 2000ms 450ms infinite ease-out;
+    animation: throbber 2000ms 450ms infinite ease-out;
+    right: -1.6em;
+}
+
+.chart-options {
+    margin-left: -5px; 
+    margin-right: -5px; 
+    padding-left: 5px; 
+    padding-right: 5px;
+    background-color: #11639d; 
+    color: #f2f1f0;
+}
+
+.chart-options button.toggle {
+    float: right;
+    border: 0 none;
+    font-size: 125%;
+    background-color: transparent;
+    color: #f2f1f0;
+}
+.chart-options button.toggle:after {
+    clear:both;
+    content: " ";
+    display: block;
+}
+
+.chart-options .chart-options-slider {
+    display: none;
+}
+
+.chart-options .chart-options-slider input {
+    max-width: 150px;
+}
