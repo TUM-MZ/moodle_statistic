@@ -66,6 +66,28 @@ class Module {
         return $this->forumId;
     }
     
+    /**
+     * 
+     * @param Array $nameArray - numeric array with module names
+     */
+    public function getModulesWithName($nameArray) {
+        $sql = "SELECT id, name FROM " .
+                $this->dbTable .
+                " WHERE name IN (";
+        if (is_array($nameArray)) {
+            for ($i = 0; $i < count($nameArray); $i++) {
+                if ($i > 0) {
+                    $sql .= ',';
+                }
+                $sql .= "'".$nameArray[$i]."'";
+            }
+        }
+        $sql .= ")";
+        
+        $q = $this->db->query($sql);
+        return $q;
+    }
+    
     /***************************************************************************
      * GLOBAL GETTER & SETTER
      */

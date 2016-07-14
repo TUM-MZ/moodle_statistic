@@ -9,7 +9,7 @@ class Forum {
 
     protected static $instance;
     private $db;
-    private $dbTable, $dbTableDiscussion;
+    private $dbTable, $dbPostsTable;
     private $course;
     private $all, $allCat;
     private $sumOfCourse, $sumOfCourseCat;
@@ -17,19 +17,20 @@ class Forum {
     private $sumOfActiveCourse, $sumOfActiveCourseCat;
     private $sumOfXtraCourseCat;
     private $sumOfActiveForum, $sumOfActiveForumCat;
+    private $sumOfActiveNewsForumCat, $sumOfActiveDiscussionForumCat;
+    private $forumCoursesCat, $emptyForumCoursesCat;
     
-    protected function __construct($course) {
-        $this->course = $course;
+    protected function __construct() {
         $this->init();
     }
 
     /**
      * getInstance method
      */
-    public static function getInstance($course) {
+    public static function getInstance() {
         
         if (!self::$instance) {
-            self::$instance = new self($course);
+            self::$instance = new self();
         }
 
         return self::$instance;
@@ -41,7 +42,8 @@ class Forum {
     private function init() {
         $this->db = DB::getInstance();
         $this->dbTable = DB_TABLE_PREFIX . 'forum';
-        $this->dbTableDiscussion = DB_TABLE_PREFIX . 'forum_discussions';
+        $this->dbPostsTable = DB_TABLE_PREFIX . 'forum_discussions';
+        $this->course = Course::getInstance();
     }
     
     /**
@@ -76,6 +78,7 @@ class Forum {
                 " WHERE course > 1" .
                 " AND course IN (" . $this->course->getIDsString(). ")" .
                 " GROUP BY course ORDER BY course ASC";
+        echo $sql; exit();
         $query = $this->db->query($sql);
         
         $this->allCat = [];
@@ -92,7 +95,7 @@ class Forum {
      */
     private function selectActiveForum() {
         $sql = "SELECT DISTINCT(forum) FROM " .
-                $this->dbTableDiscussion . ";";
+                $this->dbPostsTable . ";";
         $query = $this->db->query($sql);
         if ($query->num_rows) {
             $this->sumOfActiveForum = $query->num_rows;
@@ -106,7 +109,7 @@ class Forum {
      */
     private function selectActiveForumCat() {
         $sql = "SELECT DISTINCT(forum) FROM " .
-                $this->dbTableDiscussion .
+                $this->dbPostsTable .
                 " WHERE course IN (" . $this->course->getIDsString(). ");";
         $query = $this->db->query($sql);
         if ($query->num_rows) {
@@ -116,12 +119,44 @@ class Forum {
         }
     }
     
+    private function selectActiveNewsForumCat() {
+        $sql = "SELECT posts.*, forum.name as forum_name, forum.intro, forum.type" .
+               " FROM ". $this->dbPostsTable ."  as posts" .
+               " JOIN ". $this->dbTable ." as forum" .
+               " ON forum.id = posts.forum" .
+               " WHERE posts.course IN (" . $this->course->getIDsString(). ")" .
+               " AND forum.type = 'news'" .
+               " GROUP BY posts.course;";
+        $query = $this->db->query($sql);
+        if ($query->num_rows) {
+            $this->sumOfActiveNewsForumCat = $query->num_rows;
+        } else {
+            $this->sumOfActiveNewsForumCat = 0;
+        }
+    }
+    
+    private function selectActiveDiscussionForumCat() {
+        $sql = "SELECT posts.*, forum.name as forum_name, forum.intro, forum.type" .
+               " FROM ". $this->dbPostsTable ."  as posts" .
+               " JOIN ". $this->dbTable ." as forum" .
+               " ON forum.id = posts.forum" .
+               " WHERE posts.course IN (" . $this->course->getIDsString(). ")" .
+               " AND forum.type = 'general'" .
+               " GROUP BY posts.course;";
+        $query = $this->db->query($sql);
+        if ($query->num_rows) {
+            $this->sumOfActiveDiscussionForumCat = $query->num_rows;
+        } else {
+            $this->sumOfActiveDiscussionForumCat = 0;
+        }
+    }
+    
     /**
      * select all courses with active forum (minimum one post)
      */
     private function selectActiveCourse() {
         $sql = "SELECT DISTINCT(course) FROM " .
-                $this->dbTableDiscussion . ";";
+                $this->dbPostsTable . ";";
         $query = $this->db->query($sql);
         if ($query->num_rows) {
             $this->sumOfActiveCourse = $query->num_rows;
@@ -136,7 +171,7 @@ class Forum {
      */
     private function selectActiveCourseCat() {
         $sql = "SELECT DISTINCT(course) FROM " .
-                $this->dbTableDiscussion .
+                $this->dbPostsTable .
                 " WHERE course IN (" . $this->course->getIDsString(). ");";
         $query = $this->db->query($sql);
         if ($query->num_rows) {
@@ -191,7 +226,6 @@ class Forum {
         return $this->sumOfActiveForum;
     }
     
-    
     /* category getter */
     public function getSumOfAllCat() {
         if (!isset($this->sumOfAllCat)) {
@@ -235,6 +269,30 @@ class Forum {
     }
     
     /**
+     * returns the sum of active forums from type news
+     * @return int
+     */
+    public function getSumOfActiveNewsForumCat() {
+        if (!isset($this->sumOfActiveNewsForumCat)) {
+            $this->selectActiveNewsForumCat();
+        }
+        return $this->sumOfActiveNewsForumCat;
+    }
+    
+    /**
+     * returns the sum of active forums from type news
+     * @return int
+     */
+    public function getSumOfActiveDiscussionForumCat() {
+        if (!isset($this->sumOfActiveDiscussionForumCat)) {
+            $this->selectActiveDiscussionForumCat();
+        }
+        return $this->sumOfActiveDiscussionForumCat;
+    }
+    
+    
+    
+    /**
      * filter all courses with more than one forum
      */
     private function selectXtraForumCat() {
@@ -258,5 +316,9 @@ class Forum {
             $this->selectXtraForumCat();
         }
         return $this->sumOfXtraCourseCat;
+    }
+    
+    public function __get($name) {
+        return $this->$name;
     }
 }

@@ -13,12 +13,15 @@
 <div id="detail_output" style="display: block;">
     <h2 data-section="output-area">Details: Semester- / Fakultätsdaten</h2>
     <div class="output-config">
-        <label for="combined_selection">Kombinierte Auswertung?</label><input type="checkbox" id="combined_selection" onchange="$(this).next().children().toggle();"/>
-        <span>
-            <label style="display: none;">Summe aller Kurse:</label><span id="sum_combined_courses" style="display: none;"></span>
-        </span>
+        <label for="combined_selection">Kombinierte Auswertung?</label><input type="checkbox" id="combined_selection"/>
+        <div class="additional">
+            <label>Summe aller Kurse:</label><span id="sum_combined_courses"></span>
+        
+            <?php include_once './incs/category/chart_options.php'; ?>
+        </div>
     </div>
-    <div id="sortable">
+    <div id="arrangeable">
         <button id="addCategoryOutput" onclick="addNewCategoryOutput();" title="Weitere Auswertung hinzuf&uuml;gen"><span class="fa fa-plus"></span></button>
     </div>
+    
 </div>

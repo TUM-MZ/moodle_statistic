@@ -1,13 +1,60 @@
-
-
-
-
+"use strict";
 
 // global object to save general data like ajax url
 var GLOBALS = {
     init_callback_function_timeout: 20,
-    ajax_url: '/moodle_statistic/ajax.php'
+    ajax_url: '/moodle_statistic/ajax.php',
+    combinedSelection: false,
+    outputConfigPanel: undefined,
+    sortList: []
 };
+
+// COOKIE FUNCTIONS
+function setCookie(cname, cvalue, exdays) {
+    var newDate, expires;
+    newDate = new Date();
+    if (cvalue && cvalue !== '') {
+        newDate.setDate(newDate.getDate() + Number(exdays));
+    } else {
+        newDate.setDate(newDate.getDate() + (-1));
+    }
+    cvalue = encodeURIComponent(cvalue);
+    expires = newDate.toUTCString();
+    expires = cname + "=" + cvalue + "; expires=" + expires + ";";
+    document.cookie = expires;
+}
+
+function getCookie(cname) {
+    var name, response, ca, c;
+    name = cname + "=";
+    ca = document.cookie.split(';');
+
+    for (var i = 0; i < ca.length; i++) {
+        c = ca[i];
+        while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+            response = c.substring(name.length, c.length);
+            return decodeURIComponent(response);
+        }
+    }
+    return "";
+}
+
+function checkCookie(name) {
+    var cookie = getCookie(name);
+    if (cookie != "") {
+        alert(name + ": " + cookie);
+    } else {
+        console.log("no cookie found");
+    }
+}
+
+function deleteCookie(name) {
+    setCookie(name, '');
+}
+
 // // global function to load content via ajax, function use jQuery
 // the callback function get the target and the options object from param
 // param options must be an object
@@ -41,7 +88,7 @@ function mdl_loadContent(loadURL, options, json) {
 
 
 function invertSelection(wrapper, caller) {
-    if ($('#combined_selection').is(':checked')) {
+    if (GLOBALS.combinedSelection) {
         $(wrapper + ' input[type=checkbox]').each(function (i, obj) {
             this.checked = !this.checked;
         });
@@ -53,7 +100,7 @@ function invertSelection(wrapper, caller) {
 
 }
 function selectAllToggle(wrapper, caller) {
-    if ($('#combined_selection').is(':checked')) {
+    if (GLOBALS.combinedSelection) {
         $(wrapper + ' input[type=checkbox]').each(function () {
             this.checked = caller.checked;
         });
@@ -66,15 +113,14 @@ function selectAllToggle(wrapper, caller) {
 
 function updateCheckbox(wrapper, caller) {
     var combined;
-    combined = $('#combined_selection').is(':checked');
-    if (combined) {
+    if (GLOBALS.combinedSelection) {
         $(wrapper).find('tr[data-type=' + $(caller).data('type') + '] input[type=checkbox]').each(function () {
             this.checked = caller.checked;
         });
         toggleChartButtons({
             wrapper: wrapper,
             caller: caller,
-            combined: combined
+            combined: GLOBALS.combinedSelection
         });
     }
 }
@@ -82,7 +128,7 @@ function updateCheckbox(wrapper, caller) {
 function updateSumOfCombinedCourses() {
     var sum;
     sum = 0;
-    $('.summary .countCourseAll').each(function(){
+    $('.summary .countCourseAll').each(function () {
         sum += Number($(this).text());
     });
     $('#sum_combined_courses').text(sum);
@@ -92,7 +138,7 @@ function toggleChartButtons(options) {
     var lineChartBtn, checkedBoxes;
     lineChartBtn = $('button' + options.wrapper + '[data-type="line"]');
     checkedBoxes = $(options.caller).parents('table').find('input[type=checkbox]:checked');
-    
+
     if (options.combined && checkedBoxes.length === 1) {
         lineChartBtn.each(function () {
             $(this).removeAttr("disabled");
@@ -103,41 +149,67 @@ function toggleChartButtons(options) {
 }
 
 /**
- * removes the tablesorter events, important for updates
- * - called by activateTableSort
- * @returns {undefined}
+ * activate table sorting by class .sort-enabled and the wrapper
+ * @param {object} wrapper
+ * @returns {Boolean}
  */
-function removeTableShorter() {
-    $('table.sort-enabled')
-            .unbind('appendCache applyWidgetId applyWidgets sorton update updateCell')
-            .removeClass('tablesorter')
-            .find('thead th')
-            .unbind('click mousedown')
-            .removeClass('header headerSortDown headerSortUp');
+function activateTableSort(wrapper) {
+    var selector;
+
+    if (!wrapper) {
+        return false;
+    }
+
+    selector = $(wrapper).find('.sort-enabled');
+    selector.each(function () {
+        var options;
+        options = {};
+        if ($(this).data('sort-itemclasses')) {
+            options = {valueNames: $(this).data('sort-itemclasses').split(",")};
+            GLOBALS.sortList[GLOBALS.sortList.length] = new List(this, options);
+        }
+    });
+
+    addSyncTableSort(wrapper);
 }
 
+
 /**
- * enables the tablesorter for all tables with class 'sort-enabled'
+ * add the sort functionality to the given context
+ * @param {object} wrapper
  * @returns {undefined}
  */
-function activateTableSort() {
-    var sort_tables, heads;
-    sort_tables = $('table.sort-enabled');
-    removeTableShorter();
-    sort_tables.tablesorter();
-    heads = sort_tables.find("thead th");
-    heads.each(function (i, obj) {
-        if ($(this).find('.fa-sort').length === 0) {
-            $(this).append('<span class="fa fa-sort"></span>');
+function addSyncTableSort(wrapper) {
+    $(wrapper).find('table .sort').click(function () {
+        var listContainer, listContainerClass, order, data;
+
+        order = $(this).hasClass('asc') ? 'asc' : 'desc';
+        data = $(this).data('sort');
+
+        listContainer = $(this).parents('.sort-enabled');
+        listContainerClass = listContainer.attr('class');
+
+        for (var l in GLOBALS.sortList) {
+            // sync should only work for category outputs
+            if ($(GLOBALS.sortList[l].listContainer).parents('.category-output')) {
+                // if the current container not the iterated one
+                if (GLOBALS.sortList[l].listContainer !== listContainer.get(0)) {
+                    // order the container with the right context
+                    if ($(GLOBALS.sortList[l].listContainer).attr("class") === listContainerClass) {
+                        GLOBALS.sortList[l].sort(data, {order: order});
+                    }
+                }
+            }
         }
     });
 }
+
 
 /**
  * enables the placement sorting of category output panels
  */
 function activatePlacementSorting() {
-    $("#sortable").sortable({
+    $("#arrangeable").sortable({
         handle: '.move'
     });
 }
@@ -209,6 +281,58 @@ function addNewCategoryOutput(button, position) {
     mdl_loadContent(u, option);
 }
 
+/**
+ * open the current panel after loading, based on cookie
+ * @returns {undefined}
+ */
+function openCategoryPanel() {
+    var openPanel;
+    openPanel = getCookie('openPanel').replace(/ /g, ".");
+    if (openPanel) {
+        $('.' + openPanel).each(function () {
+            if (!$(this).is(':visible')) {
+                $(this).show();
+            }
+        });
+    }
+}
+
+/**
+ * sorting function for selectboxes
+ * @param {type} selElem
+ * @returns {undefined}
+ */
+function sortSelect(selElem) {
+    var tmpAry = new Array();
+    for (var i = 0; i < selElem.options.length; i++) {
+        tmpAry[i] = new Array();
+        tmpAry[i][0] = selElem.options[i].text;
+        tmpAry[i][1] = selElem.options[i].value;
+        tmpAry[i][2] = selElem.options[i].selected;
+    }
+    tmpAry.sort();
+    while (selElem.options.length > 0) {
+        selElem.options[0] = null;
+    }
+    for (var i = 0; i < tmpAry.length; i++) {
+        var op = new Option(tmpAry[i][0], tmpAry[i][1]);
+        if (tmpAry[i][2] === true) {
+            op.selected = 'selected';
+        }
+        selElem.options[i] = op;
+    }
+    return;
+}
+/**
+ * init function to sort the category selectboxes
+ * @returns {undefined}
+ */
+function sortCategorySelectBox(wrapper) {
+    var selects = $(wrapper).find('.select_panel select:first-child');
+    selects.each(function () {
+        sortSelect(this);
+    });
+}
 
 /*******************************************************************************
  * UPDATE CATEGORY CONTAINER
@@ -216,13 +340,17 @@ function addNewCategoryOutput(button, position) {
 
 function replaceCategoryOutput(dataObj) {
     var wrapper;
+
     wrapper = $(dataObj.options.wrapperObj);
     wrapper.html($(dataObj.response).html());
     // initialize / update the table sorter for new and old content
-    activateTableSort();
+    activateTableSort(wrapper);
     activatePlacementSorting();
     addAccordionToOutputs();
     updateSumOfCombinedCourses();
+    handleChartOptions();
+    openCategoryPanel();
+    sortCategorySelectBox(wrapper);
 }
 
 /**
@@ -236,35 +364,53 @@ function addAccordionToOutputs() {
     allPanels = outputs.find('h3 + .box');
 
     allHeadlines = allPanels.prev().find('span[class*=headline]');
-    
+
     allHeadlines.unbind("click");
 
     //if (outputs.length === 1) {
     allHeadlines.click(function (evt) {
         var curPanel, visible, headlines;
-        
+
         curPanel = $(this).parent().next();
         visible = curPanel.is(':visible');
-        
-        headlines =  $('h3 > span[class*="headline"]:not(.' + this.className + ')');
-        
+
+        headlines = $('h3 > span[class*="headline"]:not(.' + this.className + ')');
+
         headlines.parent().find('.toggle').removeClass('fa-toggle-on fa-toggle-off').addClass('fa-toggle-off');
         headlines.parent().next().hide("slow");
-        
+
         $('h3 span.' + this.className).parent().next('.box').each(
                 function () {
+
                     if (visible) {
                         $(this).slideUp("slow");
                         $(this).prev().find('.toggle').removeClass('fa-toggle-on fa-toggle-off').addClass('fa-toggle-off');
+                        deleteCookie("openPanel");
                     } else {
                         $(this).slideDown("slow");
                         $(this).prev().find('.toggle').removeClass('fa-toggle-on fa-toggle-off').addClass('fa-toggle-on');
+                        setCookie("openPanel", this.className, 7);
                     }
                 }
         );
+
+
     });
 }
 
+/**
+ * sync all views after change of category
+ * @returns {undefined}
+ */
+function handleChartOptions() {
+    var categoryOutputs;
+    categoryOutputs = $('.category-output');
+
+    // if the combined selection is active, hide the category chart options
+    if (GLOBALS.combinedSelection) {
+        categoryOutputs.find('.chart-options').hide();
+    }
+}
 /**
  * 
  * @param {string} reference selector for positioning
@@ -453,14 +599,18 @@ function collectGraphDatas(options) {
     var dataPoints, modules, prepareOptions;
     dataPoints = [];
     modules = {};
-    switch (options.report) {
-        case 'instances':
-            modules = getSumOfSelectedModules(options.contentTableRows);
-            break;
-        case 'course':
-        case 'all':
+    
+    switch (options.chartOptions.relationBase) {
+        case 'sumOfAllCatCourses':
             modules.selection = filterSelectedModules(options.contentTableRows);
-            modules.sum = options.countCourses;
+            modules.sum = options.sumOfAllCatCourses;
+            break;
+        case 'sumOfAllCatCoursesActive':
+            modules.selection = filterSelectedModules(options.contentTableRows);
+            modules.sum = options.sumOfAllCatCoursesActive;
+            break;
+        default:
+            modules = getSumOfSelectedModules(options.contentTableRows);
             break;
     }
 
@@ -483,7 +633,8 @@ function getChartOptions(options) {
         xAxisMaxWidth: Number($.trim(oC.find('.input-chart-x-max-width').val())),
         showLabelSum: oC.find('.show-label-sum').is(':checked'),
         showLabelPercent: oC.find('.show-label-percent').is(':checked'),
-        theme: oC.find('select.chart-theme-seletor').val()
+        theme: oC.find('select.chart-theme-seletor').val(),
+        relationBase: oC.find('.relation-base input[type=radio]:checked').val()
     };
     return response;
 }
@@ -520,7 +671,52 @@ function transformData(options) {
     return options.data;
 }
 
+/**
+ * rewrite the 'data-relative-to' / output type on each chart-button-panel
+ * @param {dom object} radioBtn
+ * @returns {undefined}
+ */
+function changeRelativeTo(radioBtn) {
+    var catCon, btnPanel;
 
+    catCon = $(radioBtn).parents('.category-output');
+    btnPanel = catCon.find('div[data-relative-to]');
+
+    btnPanel.each(function () {
+        $(this).data('relative-to', radioBtn.value);
+    });
+}
+
+/**
+ * shortcut function to select elements of the whished cluster
+ * cluster object is given in html template
+ * @param {string} name = clustername
+ * @returns {undefined}
+ */
+function selectCluster(caller, name, cluster) {
+    var catCon, checkBoxes, search, modules;
+
+    if (!GLOBALS.combinedSelection) {
+        catCon = $(caller).parents('.category-output');
+    } else {
+        catCon = $('.category-output');
+    }
+
+    checkBoxes = catCon.find('.courseModuleRelation input[type=checkbox]');
+    checkBoxes.attr("checked", false);
+
+    search = [];
+    modules = Object.keys(cluster[name]);
+    for (var module in modules) {
+        search[module] = '.courseModuleRelation tr[data-type=course-' + modules[module] + '] input[type=checkbox]';
+    }
+    search = search.join(", ");
+
+    catCon.find(search).each(function () {
+        this.checked = true;
+    });
+
+}
 
 
 /**
@@ -531,7 +727,8 @@ function transformData(options) {
  */
 function createChart(caller, reference) {
     var categoryContainer, graphData, data, chartType, chartOptions,
-            btn, exportFilename, combined, reportType, sumOfCatSelection;
+            btn, exportFilename, sumOfCatSelection;
+    var sumOfCoursesActive;
     // fontsizes for different media targets
     var font, showLegend, optimizedFor, subTitle;
     btn = $(caller);
@@ -543,24 +740,17 @@ function createChart(caller, reference) {
 
     sumOfCatSelection = getSumOfSelectedData(categoryContainer, reference);
     optimizedFor = categoryContainer.find('.target-out-choice input[type=radio]:checked').val();
-    combined = ($('#combined_selection').is(':checked')) ? true : false;
-    showLegend = (!combined || chartType === 'doughnut') ? false : true;
+
+    showLegend = (!GLOBALS.combinedSelection || chartType === 'doughnut') ? false : true;
     subTitle = (!showLegend) ? $(categoryContainer).find('.legend_text').val() : '';
-    chartOptions = getChartOptions({optionsContainer: categoryContainer.find('.chart-options')});
-    switch (reference) {
-        case '.moduleDetails':
-            reportType = 'instances';
-            break;
-        case '.courseModuleRelation':
-            reportType = 'course';
-            break;
-        default:
-            reportType = 'all';
+
+    if (GLOBALS.combinedSelection) {
+        chartOptions = getChartOptions({optionsContainer: GLOBALS.outputConfigPanel.find('.additional .chart-options')});
+    } else {
+        chartOptions = getChartOptions({optionsContainer: categoryContainer.find('.chart-options')});
     }
 
-
-
-// default definition of fontsize, based on screen
+    // default definition of fontsize, based on screen
     font = {
         family: '"Helvetica Neue TUM", Arial, sans-serif',
         weight: {
@@ -613,10 +803,10 @@ function createChart(caller, reference) {
 
     exportFilename = getExportFilename();
     /*
-     * graph creation depends on combined selection
+     * graph creation depends on GLOBALS.combinedSelection selection
      */
     var catCaller;
-    if (combined && chartType !== 'doughnut') {
+    if (GLOBALS.combinedSelection && chartType !== 'doughnut') {
         catCaller = $('button[data-type=' + btn.data('type') + '][class=' + btn.get(0).className + ']');
     } else {
         catCaller = $(caller);
@@ -628,14 +818,20 @@ function createChart(caller, reference) {
         catCon = $(this).parents('.category-output');
         rows = catCon.find(reference + ' tbody tr');
         legendLabel = catCon.find('.legend_text').val();
+
         sumOfCourses = Number(catCon.find('.summary .countCourseAll').text()) || 0;
+        sumOfCoursesActive = Number(catCon.find('.summary .countCourseActive').text()) || 0;
+
+
+
         dataPointOptions = {
-            report: reportType,
             chartType: chartType,
-            countCourses: sumOfCourses,
+            sumOfAllCatCourses: sumOfCourses,
+            sumOfAllCatCoursesActive: sumOfCoursesActive,
             contentTableRows: rows,
             chartOptions: chartOptions
         };
+
         data[data.length] = {
             type: chartType,
             indexLabelFontFamily: font.family,
@@ -650,9 +846,9 @@ function createChart(caller, reference) {
     var dataOptions = {
         data: data
     };
-    // in case of combined statistic, split data group to single groups, if the 
+    // in case of GLOBALS.combinedSelection statistic, split data group to single groups, if the 
     // selection is only one data
-    if (combined && sumOfCatSelection === 1) {
+    if (GLOBALS.combinedSelection && sumOfCatSelection === 1) {
         data = transformData(dataOptions);
     }
 
@@ -726,8 +922,9 @@ function createChart(caller, reference) {
             }];
     }
 
-// create chart container
+    // create chart container
     createModalChartContainer();
+
     // create and render chart
     var chart = new CanvasJS.Chart('chartContainer', graphData);
     chart.render();
@@ -748,22 +945,34 @@ function saveGraph(button) {
  * @param {dom-object} show options button
  */
 function toggleChartOptions(button) {
-    $(button).parents('.chart-options').find('.chart-options-slider').slideToggle();
+    $(button).parents('.chart-options').find('.chart-options-config').slideToggle();
 }
 
+/**
+ * watch the status of combined selection and handle dependencies
+ * @param {event} evt
+ * @returns {undefined}
+ */
+function watchCombinedSelection(evt) {
+    GLOBALS.combinedSelection = $(this).is(':checked');
 
-
+    if (GLOBALS.combinedSelection) {
+        GLOBALS.outputConfigPanel.find('.additional').show();
+        $('.category-output .chart-options').hide();
+    } else {
+        GLOBALS.outputConfigPanel.find('.additional').hide();
+        $('.category-output .chart-options').show();
+    }
+}
 
 
 /*
  * DOCUMENT READY ACTION
  */
 (function ($) {
-
-    activateTableSort();
+    activateTableSort('#global_info');
     addNewCategoryOutput();
-
-
-
+    GLOBALS.outputConfigPanel = $('.output-config');
+    GLOBALS.outputConfigPanel.find('#combined_selection').change(watchCombinedSelection);
 
 })(jQuery);

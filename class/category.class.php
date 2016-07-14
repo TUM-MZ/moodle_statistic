@@ -1,9 +1,9 @@
 <?php
-
 /**
- * Description of category
- *
- * @author schlender
+ * Organize all course categories to handle semester, faculties and further
+ * institutions. Class course, module, semester, ... depends on the results of 
+ * these class
+ * 
  */
 class Category {
 
@@ -117,33 +117,6 @@ class Category {
         unset($otherSem);
     }
 
-    private function updateAll_old() {
-        $this->setActivePath($this->getTopLevel(0)->path, 1);
-        
-        $top0 = $this->getTopLevel(0);
-        $childs0 = $this->getActiveChilds();
-        
-        asort($childs0);
-        $a = array_merge(array(0 => $top0), $childs0);
-        #asort($a);
-
-        $this->setActivePath($this->getTopLevel(1)->path, 2);
-	$top1 = $this->getTopLevel(1);
-	$childs1 = $this->getActiveChilds();
-        
-        /*
-        echo '<hr/>';
-        print_r($childs1);
-        echo '<hr/>';
-        asort($childs1);
-        print_r($childs1);
-        echo '<hr/>';
-         * 
-         */
-        $b = array_merge(array(0 => $top1), $childs1);
-
-        $this->all = array_merge($a, $b);
-    }
 
     # ==========================================================================
     # TOP LEVEL CATEGORIES
@@ -151,7 +124,6 @@ class Category {
     /**
      * fill class array topLevel with all category entries for top level
      */
-
     private function updateTopLevel() {
         $query = $this->selectByParentId(0, "ORDER BY id DESC");
         while ($r = $query->fetch_object()) {

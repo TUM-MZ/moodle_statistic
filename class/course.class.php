@@ -368,7 +368,8 @@ class Course {
         if (empty($this->courseId)) {
             return false;
         } else {
-            return implode(",", $this->courseId);
+            $this->setCourseIDsString(implode(",", $this->courseId));
+            return $this->courseIDsString;
         }
     }
 

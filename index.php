@@ -20,10 +20,12 @@ include_once './system/config.php';
         ?>
         
         <script type="text/javascript" src="js/jquery-2.2.3.min.js"> </script>
-        <script type="text/javascript" src="js/jquery_tablesorter/jquery.tablesorter.min.js"> </script>
-        <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"> </script>
-        <!-- script src="http://canvasjs.com/assets/script/canvasjs.min.js"> </script -->
+        <script type="text/javascript" src="js/jquery-ui-1.12.0/jquery-ui.min.js"></script>
+        
+        <script type="text/javascript" src="js/listjs/list.min.js"></script>
+        
         <script type="text/javascript" src="js/canvasjs/canvasjs.min.js"> </script>
+        
         <script type="text/javascript" src="js/default.js"> </script>
     </body>
 </html>
