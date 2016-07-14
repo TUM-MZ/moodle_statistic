@@ -61,6 +61,6 @@ Way 1: Copy or symlink the moodle_statistic folder in your root of moodle to han
 Way 2: Copy / check out the project into any directory and use the tool without any security checks
 <br/>
 
-**NOT STANDARD-MOODLE-INSTALLATION?**
+**ANY changes?**
 
-EDIT the config.php in root folder of moodle_statistic
+EDIT the config.php in folder 'system'
