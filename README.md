@@ -52,6 +52,8 @@ To use the tool without any changes you must have a course structure like this:
 ---- department 2
 ---- ...
 </pre>
+
+
 ## Use it
 You need admin rights to get a view on the tool, or you use it outside of moodle without any security checks
 
