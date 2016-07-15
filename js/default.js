@@ -6,8 +6,29 @@ var GLOBALS = {
     ajax_url: '/moodle_statistic/ajax.php',
     combinedSelection: false,
     outputConfigPanel: undefined,
-    sortList: []
+    sortList: [],
+    chartFontsize: {
+        screen: {
+            title: 36,
+            subTitle: 28,
+            legend: 14,
+            label: 12,
+            axisTitle: 24,
+            axisX: 13,
+            axisY: 16
+        },
+        pres: {
+            title: 42,
+            subTitle: 32,
+            legend: 24,
+            label: 18,
+            axisTitle: 34,
+            axisX: 28,
+            axisY: 28
+        }
+    }
 };
+
 
 // COOKIE FUNCTIONS
 function setCookie(cname, cvalue, exdays) {
@@ -544,6 +565,48 @@ function filterSelectedModules(slctTableRow) {
     return moduleSelection;
 }
 
+
+
+/**
+ * update all empty chart font size inputs with selected defaults
+ * @param {object} caller = input click event object
+ * @returns {undefined}
+ */
+function updateChartFontsizeInputs(caller) {
+    var chartOptCon, fontInputs, callerValue;
+
+    callerValue = $('input[name=' + caller.name + ']:checked').val();
+    chartOptCon = $(caller).parents('.chart-options');
+
+    chartOptCon.find('.fontsize-options input').each(function () {
+
+        switch (this.className) {
+            case 'chart-title-fontsize':
+                this.value = GLOBALS.chartFontsize[callerValue].title;
+                break;
+            case 'chart-subtitle-fontsize':
+                this.value = GLOBALS.chartFontsize[callerValue].subTitle;
+                break;
+            case 'chart-axis-x-index-fontsize':
+                this.value = GLOBALS.chartFontsize[callerValue].axisX;
+                break;
+            case 'chart-axis-y-index-fontsize':
+                this.value = GLOBALS.chartFontsize[callerValue].axisY;
+                break;
+            case 'chart-axis-title-fontsize':
+                this.value = GLOBALS.chartFontsize[callerValue].axisTitle;
+                break;
+            case 'chart-legend-fontsize':
+                this.value = GLOBALS.chartFontsize[callerValue].legend;
+                break;
+            case 'chart-description-fontsize':
+                this.value = GLOBALS.chartFontsize[callerValue].label;
+                break;
+        }
+    });
+}
+
+
 function prepareDataPoints(options) {
     var dataPoints;
     dataPoints = [];
@@ -599,7 +662,7 @@ function collectGraphDatas(options) {
     var dataPoints, modules, prepareOptions;
     dataPoints = [];
     modules = {};
-    
+
     switch (options.chartOptions.relationBase) {
         case 'sumOfAllCatCourses':
             modules.selection = filterSelectedModules(options.contentTableRows);
@@ -628,13 +691,23 @@ function getChartOptions(options) {
     var oC, response;
     oC = options.optionsContainer;
     response = {
+        chartOptimizedFor: oC.find('.target-out-choice input[type=radio]:checked').val(),
         chartTitle: $.trim(oC.find('.input-chart-title').val()),
+        xAxisTitle: $.trim(oC.find('.input-x-axis-title').val()),
         xAxisAngle: Number($.trim(oC.find('.input-chart-x-angle').val())),
         xAxisMaxWidth: Number($.trim(oC.find('.input-chart-x-max-width').val())),
+        yAxisTitle: $.trim(oC.find('.input-y-axis-title').val()),
         showLabelSum: oC.find('.show-label-sum').is(':checked'),
         showLabelPercent: oC.find('.show-label-percent').is(':checked'),
         theme: oC.find('select.chart-theme-seletor').val(),
-        relationBase: oC.find('.relation-base input[type=radio]:checked').val()
+        relationBase: oC.find('.relation-base input[type=radio]:checked').val(),
+        fontsizeIndexXAxis: Number($.trim(oC.find('.fontsize-options .chart-axis-x-index-fontsize').val())),
+        fontsizeIndexYAxis: Number($.trim(oC.find('.fontsize-options .chart-axis-y-index-fontsize').val())),
+        fontsizeTitleAxis: Number($.trim(oC.find('.fontsize-options .chart-axis-title-fontsize').val())),
+        fontsizeTitle: Number($.trim(oC.find('.fontsize-options .chart-title-fontsize').val())),
+        fontsizeSubtitle: Number($.trim(oC.find('.fontsize-options .chart-subtitle-fontsize').val())),
+        fontsizeLegend: Number($.trim(oC.find('.fontsize-options .chart-legend-fontsize').val())),
+        fontsizeDescription: Number($.trim(oC.find('.fontsize-options .chart-description-fontsize').val()))
     };
     return response;
 }
@@ -718,7 +791,6 @@ function selectCluster(caller, name, cluster) {
 
 }
 
-
 /**
  * creates a canvas chart for selected context
  * @param {dom-object} caller: like this
@@ -730,7 +802,7 @@ function createChart(caller, reference) {
             btn, exportFilename, sumOfCatSelection;
     var sumOfCoursesActive;
     // fontsizes for different media targets
-    var font, showLegend, optimizedFor, subTitle;
+    var font, showLegend, subTitle;
     btn = $(caller);
     chartType = btn.data("type");
     categoryContainer = btn.parents('.category-output');
@@ -739,8 +811,6 @@ function createChart(caller, reference) {
     }
 
     sumOfCatSelection = getSumOfSelectedData(categoryContainer, reference);
-    optimizedFor = categoryContainer.find('.target-out-choice input[type=radio]:checked').val();
-
     showLegend = (!GLOBALS.combinedSelection || chartType === 'doughnut') ? false : true;
     subTitle = (!showLegend) ? $(categoryContainer).find('.legend_text').val() : '';
 
@@ -761,20 +831,20 @@ function createChart(caller, reference) {
             title: 'bold'
         },
         size: {
-            title: 36,
-            subTitle: 28,
-            legend: 14,
-            label: 12,
-            axisTitle: 24,
-            axisX: 13,
-            axisY: 16
+            title: chartOptions.fontsizeTitle || GLOBALS.chartFontsize.screen.title,
+            subTitle: chartOptions.fontsizeSubtitle || GLOBALS.chartFontsize.screen.subTitle,
+            legend: chartOptions.fontsizeLegend || GLOBALS.chartFontsize.screen.legend,
+            label: chartOptions.fontsizeDescription || GLOBALS.chartFontsize.screen.label,
+            axisTitle: chartOptions.fontsizeTitleAxis || GLOBALS.chartFontsize.screen.axisTitle,
+            axisX: chartOptions.fontsizeIndexXAxis || GLOBALS.chartFontsize.screen.axisX,
+            axisY: chartOptions.fontsizeIndexYAxis || GLOBALS.chartFontsize.screen.axisY
         }
     };
     if (chartType === 'doughnut') {
-        font.size.label = 16;
+        font.size.label = chartOptions.fontsizeIndexXAxis || GLOBALS.chartFontsize.screen.axisX || chartOptions.fontsizeIndexYAxis || GLOBALS.chartFontsize.screen.axisY;
     }
 
-    switch (optimizedFor) {
+    switch (chartOptions.chartOptimizedFor) {
         case 'pres':
             font = {
                 family: '"Helvetica Neue TUM", Arial, sans-serif',
@@ -786,17 +856,17 @@ function createChart(caller, reference) {
                     title: 'bold'
                 },
                 size: {
-                    title: 42,
-                    subTitle: 32,
-                    legend: 24,
-                    label: 18,
-                    axisTitle: 34,
-                    axisX: 28,
-                    axisY: 28
+                    title: chartOptions.fontsizeTitle || GLOBALS.chartFontsize.pres.title,
+                    subTitle: chartOptions.fontsizeSubtitle || GLOBALS.chartFontsize.pres.subTitle,
+                    legend: chartOptions.fontsizeLegend || GLOBALS.chartFontsize.pres.legend,
+                    label: chartOptions.fontsizeDescription || GLOBALS.chartFontsize.pres.label,
+                    axisTitle: chartOptions.fontsizeTitleAxis || GLOBALS.chartFontsize.pres.axisTitle,
+                    axisX: chartOptions.fontsizeIndexXAxis || GLOBALS.chartFontsize.pres.axisX,
+                    axisY: chartOptions.fontsizeIndexYAxis || GLOBALS.chartFontsize.pres.axisY
                 }
             };
             if (chartType === 'doughnut') {
-                font.size.label = 26;
+                font.size.label = chartOptions.fontsizeIndexXAxis || chartOptions.fontsizeIndexYAxis || 26;
             }
             break;
     }
@@ -876,7 +946,7 @@ function createChart(caller, reference) {
             labelFontWeight: font.weight.axisX,
             labelFontColor: '#002143',
             labelFontFamily: font.family,
-            title: btn.data('xaxis-title'),
+            title: chartOptions.xAxisTitle || btn.data('xaxis-title'),
             titleFontSize: font.size.axisTitle,
             titleFontWeight: font.weight.axisTitle
         },
@@ -886,7 +956,7 @@ function createChart(caller, reference) {
             labelFontColor: '#333',
             labelFontFamily: font.family,
             gridColor: '#DDD',
-            title: btn.data('yaxis-title'),
+            title: chartOptions.yAxisTitle || btn.data('yaxis-title'),
             titleFontSize: font.size.axisTitle,
             titleFontWeight: font.weight.axisTitle
         },

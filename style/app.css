@@ -27,6 +27,7 @@ th[onclick] {
     display: none;
 }
 
+
 /* MENU */
 .menu-panel li {
     display: inline-block;
@@ -257,6 +258,14 @@ tbody td + td {
     color: #f2f1f0;
 }
 
+.chart-options label[for*="title-input"] {
+    display: inline-block;
+    width: 30%;
+}
+.chart-options label[for*="title-input"] + input {
+    max-width: 50%;
+}
+
 .chart-options button.toggle {
     float: right;
     border: 0 none;
@@ -276,6 +285,10 @@ tbody td + td {
 
 .chart-options .chart-options-config input {
     max-width: 150px;
+}
+
+.chart-options .chart-options-config input[type=number] {
+    max-width: 50px;
 }
 
 .chart-options .target-out-choice input {
@@ -404,4 +417,14 @@ THROBBER
 /* SORT STYLING */
 .sort[data-sort] {
     cursor: pointer;
+}
+
+
+.canvasjs-chart-toolbar {
+    right: auto;
+    top: 10px;
+    left: 0;
+}
+.canvasjs-chart-toolbar > div {
+    right: auto !important;
 }
