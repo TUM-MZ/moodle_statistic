@@ -945,8 +945,8 @@ function createChart(caller, reference) {
             labelFontSize: font.size.axisX,
             labelFontWeight: font.weight.axisX,
             labelFontColor: '#002143',
-            labelFontFamily: font.family,
-            title: chartOptions.xAxisTitle || btn.data('xaxis-title'),
+            labelFontFamily: font.family, 
+           title: chartOptions.xAxisTitle || btn.data('xaxis-title'),
             titleFontSize: font.size.axisTitle,
             titleFontWeight: font.weight.axisTitle
         },
@@ -975,7 +975,8 @@ function createChart(caller, reference) {
                 }
                 chart.render();
             },
-            cursor: 'pointer'
+            cursor: 'pointer',
+            maxWidth: 1450
         },
         theme: chartOptions.theme,
         title: {
