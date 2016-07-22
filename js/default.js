@@ -26,6 +26,10 @@ var GLOBALS = {
             axisX: 28,
             axisY: 28
         }
+    },
+    chartDimension: {
+        width: 1600,
+        height: 900
     }
 };
 
@@ -148,11 +152,20 @@ function updateCheckbox(wrapper, caller) {
 
 function updateSumOfCombinedCourses() {
     var sum;
-    sum = 0;
+    sum = {
+        all: 0,
+        active: 0
+    };
+
     $('.summary .countCourseAll').each(function () {
-        sum += Number($(this).text());
+        sum.all += Number($(this).text());
     });
-    $('#sum_combined_courses').text(sum);
+    $('#sum_combined_courses').text(sum.all);
+
+    $('.summary .countCourseActive').each(function () {
+        sum.active += Number($(this).text());
+    });
+    $('#sum_combined_active_courses').text(sum.active);
 }
 
 function toggleChartButtons(options) {
@@ -491,16 +504,20 @@ function switchView(selectbox, path) {
 /*******************************************************************************
  * CHARTING / GRAPHS
  */
-function createModalChartContainer() {
-    var modalChart, chartContainer;
+function createModalChartContainer(option) {
+    var modalChart, chartContainer, style, width, height;
+    width = (option.chartDimension.width || GLOBALS.chartDimension.width);
+    height = (option.chartDimension.height || GLOBALS.chartDimension.height);
+    style = 'height: ' + height + 'px;';
+    style += ' width: ' + width + 'px;';
     modalChart = $('#modalChart');
-    chartContainer = '<div id="chartContainer" style="height: 900px; width: 1600px;"></div>';
+    chartContainer = '<div id="chartContainer" style="' + style + '"></div>';
     chartContainer += '<button onclick="$(\'#modalChart\').slideToggle(500, remove);">X</button><hr/>';
     if (modalChart.length < 1) {
         $('h2[data-section=output-area]').after('<div id="modalChart">' + chartContainer + '</div>');
     } else {
 // clear the chart container for new content
-        $('#chartContainer').html("");
+        $('#chartContainer').html("").css({"width": width, "height": height});
     }
 }
 
@@ -578,7 +595,7 @@ function updateChartFontsizeInputs(caller) {
     callerValue = $('input[name=' + caller.name + ']:checked').val();
     chartOptCon = $(caller).parents('.chart-options');
 
-    chartOptCon.find('.fontsize-options input').each(function () {
+    chartOptCon.find('.fontsize-settings input').each(function () {
 
         switch (this.className) {
             case 'chart-title-fontsize':
@@ -693,6 +710,7 @@ function getChartOptions(options) {
     response = {
         chartOptimizedFor: oC.find('.target-out-choice input[type=radio]:checked').val(),
         chartTitle: $.trim(oC.find('.input-chart-title').val()),
+        chartSubtitle: $.trim(oC.find('.input-chart-subtitle').val()),
         xAxisTitle: $.trim(oC.find('.input-x-axis-title').val()),
         xAxisAngle: Number($.trim(oC.find('.input-chart-x-angle').val())),
         xAxisMaxWidth: Number($.trim(oC.find('.input-chart-x-max-width').val())),
@@ -701,13 +719,17 @@ function getChartOptions(options) {
         showLabelPercent: oC.find('.show-label-percent').is(':checked'),
         theme: oC.find('select.chart-theme-seletor').val(),
         relationBase: oC.find('.relation-base input[type=radio]:checked').val(),
-        fontsizeIndexXAxis: Number($.trim(oC.find('.fontsize-options .chart-axis-x-index-fontsize').val())),
-        fontsizeIndexYAxis: Number($.trim(oC.find('.fontsize-options .chart-axis-y-index-fontsize').val())),
-        fontsizeTitleAxis: Number($.trim(oC.find('.fontsize-options .chart-axis-title-fontsize').val())),
-        fontsizeTitle: Number($.trim(oC.find('.fontsize-options .chart-title-fontsize').val())),
-        fontsizeSubtitle: Number($.trim(oC.find('.fontsize-options .chart-subtitle-fontsize').val())),
-        fontsizeLegend: Number($.trim(oC.find('.fontsize-options .chart-legend-fontsize').val())),
-        fontsizeDescription: Number($.trim(oC.find('.fontsize-options .chart-description-fontsize').val()))
+        fontsizeIndexXAxis: Number($.trim(oC.find('.fontsize-settings .chart-axis-x-index-fontsize').val())),
+        fontsizeIndexYAxis: Number($.trim(oC.find('.fontsize-settings .chart-axis-y-index-fontsize').val())),
+        fontsizeTitleAxis: Number($.trim(oC.find('.fontsize-settings .chart-axis-title-fontsize').val())),
+        fontsizeTitle: Number($.trim(oC.find('.fontsize-settings .chart-title-fontsize').val())),
+        fontsizeSubtitle: Number($.trim(oC.find('.fontsize-settings .chart-subtitle-fontsize').val())),
+        fontsizeLegend: Number($.trim(oC.find('.fontsize-settings .chart-legend-fontsize').val())),
+        fontsizeDescription: Number($.trim(oC.find('.fontsize-settings .chart-description-fontsize').val())),
+        chartDimension: {
+            width: (Number($.trim(oC.find('.chart-dimension .chart-dimension-width').val())) || 1600),
+            height: (Number($.trim(oC.find('.chart-dimension .chart-dimension-height').val())) || 900)
+        }
     };
     return response;
 }
@@ -799,7 +821,7 @@ function selectCluster(caller, name, cluster) {
  */
 function createChart(caller, reference) {
     var categoryContainer, graphData, data, chartType, chartOptions,
-            btn, exportFilename, sumOfCatSelection;
+            btn, exportFilename, sumOfCatSelection, legendMaxWidth;
     var sumOfCoursesActive;
     // fontsizes for different media targets
     var font, showLegend, subTitle;
@@ -812,13 +834,32 @@ function createChart(caller, reference) {
 
     sumOfCatSelection = getSumOfSelectedData(categoryContainer, reference);
     showLegend = (!GLOBALS.combinedSelection || chartType === 'doughnut') ? false : true;
-    subTitle = (!showLegend) ? $(categoryContainer).find('.legend_text').val() : '';
 
     if (GLOBALS.combinedSelection) {
         chartOptions = getChartOptions({optionsContainer: GLOBALS.outputConfigPanel.find('.additional .chart-options')});
     } else {
         chartOptions = getChartOptions({optionsContainer: categoryContainer.find('.chart-options')});
     }
+
+    subTitle = '';
+    /* if no legend is active === single category output 
+     * -> subtitle = custom input or set the legend text as subTitle
+     */
+    if (!showLegend) {
+        // if no title defined and a custom subtitle is given
+        // -> set the legend text as title
+        if (!chartOptions.chartTitle && chartOptions.chartSubtitle) {
+            chartOptions.chartTitle = $(categoryContainer).find('.legend_text').val();
+            subTitle = chartOptions.chartSubtitle;
+        } else {
+            subTitle = chartOptions.chartSubtitle || $(categoryContainer).find('.legend_text').val();
+        }
+    } else {
+        subTitle = chartOptions.chartSubtitle || $(categoryContainer).find('.legend_text').val();
+    }
+
+
+    legendMaxWidth = Math.round(chartOptions.chartDimension.width * 0.9) || 1450;
 
     // default definition of fontsize, based on screen
     font = {
@@ -945,8 +986,8 @@ function createChart(caller, reference) {
             labelFontSize: font.size.axisX,
             labelFontWeight: font.weight.axisX,
             labelFontColor: '#002143',
-            labelFontFamily: font.family, 
-           title: chartOptions.xAxisTitle || btn.data('xaxis-title'),
+            labelFontFamily: font.family,
+            title: chartOptions.xAxisTitle || btn.data('xaxis-title'),
             titleFontSize: font.size.axisTitle,
             titleFontWeight: font.weight.axisTitle
         },
@@ -976,7 +1017,7 @@ function createChart(caller, reference) {
                 chart.render();
             },
             cursor: 'pointer',
-            maxWidth: 1450
+            maxWidth: legendMaxWidth
         },
         theme: chartOptions.theme,
         title: {
@@ -994,7 +1035,7 @@ function createChart(caller, reference) {
     }
 
     // create chart container
-    createModalChartContainer();
+    createModalChartContainer(chartOptions);
 
     // create and render chart
     var chart = new CanvasJS.Chart('chartContainer', graphData);

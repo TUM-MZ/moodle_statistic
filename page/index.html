@@ -15,13 +15,16 @@
     <div class="output-config">
         <label for="combined_selection">Kombinierte Auswertung?</label><input type="checkbox" id="combined_selection"/>
         <div class="additional">
-            <label>Summe aller Kurse:</label><span id="sum_combined_courses"></span>
-        
+            <div style="display: inline-block;">
+                <label>&sum; alle Kurse:</label><span id="sum_combined_courses"></span>
+                <br/>
+                <label>&sum; aktive Kurse:</label><span id="sum_combined_active_courses"></span>
+            </div>
             <?php include_once './incs/category/chart_options.php'; ?>
         </div>
     </div>
     <div id="arrangeable">
         <button id="addCategoryOutput" onclick="addNewCategoryOutput();" title="Weitere Auswertung hinzuf&uuml;gen"><span class="fa fa-plus"></span></button>
     </div>
-    
+
 </div>
