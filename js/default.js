@@ -854,8 +854,8 @@ function createChart(caller, reference) {
         } else {
             subTitle = chartOptions.chartSubtitle || $(categoryContainer).find('.legend_text').val();
         }
-    } else {
-        subTitle = chartOptions.chartSubtitle || $(categoryContainer).find('.legend_text').val();
+    } else if (GLOBALS.combinedSelection) {
+        subTitle = chartOptions.chartSubtitle || '';
     }
 
 
@@ -1030,7 +1030,8 @@ function createChart(caller, reference) {
     };
     if (subTitle !== '') {
         graphData.subtitles = [{
-                text: subTitle
+                text: subTitle,
+                fontSize: font.size.subTitle
             }];
     }
 
