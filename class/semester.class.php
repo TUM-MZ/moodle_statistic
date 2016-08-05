@@ -3,7 +3,7 @@
 /**
  * Description of semester
  *
- * @author schlender
+ * @author
  */
 class Semester {
 

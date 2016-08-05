@@ -3,7 +3,7 @@
 /**
  * Controller class for course and modules, which creates the objects
  *
- * @author schlender
+ * @author
  */
 class CourseModules {
 

@@ -3,7 +3,7 @@
 /**
  * Description of user
  *
- * @author schlender
+ * @author
  */
 class Module {
 

@@ -3,7 +3,7 @@
 /**
  * Description of Course
  *
- * @author schlender
+ * @author
  */
 class Course {
 
