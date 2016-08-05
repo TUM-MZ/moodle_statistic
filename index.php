@@ -10,7 +10,7 @@ include_once './system/config.php';
         <meta charset="UTF-8">
         <title>Statistik</title>
         <link rel="stylesheet" href="style/app.css"/>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css"/>
+        <link rel="stylesheet" href="style/font-awesome-4.6.3/css/font-awesome.min.css"/>
     </head>
     <body>
         
