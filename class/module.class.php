@@ -35,15 +35,15 @@ class Module {
         $this->selectForumId();
     }
 
-    
+
     private function selectForumId() {
         $sql = "SELECT * FROM " .
                $this->dbTable .
-               " WHERE name LIKE 'forum' LIMIT 0,1";
+               " WHERE name LIKE 'forum' LIMIT 1";
         $query = $this->db->query($sql);
         $this->forumId = $query->fetch_object()->id;
     }
-    
+
     public function getSumOfTypesAll() {
         $sql = "SELECT count(id) as count FROM " .
                 $this->dbTable;
@@ -58,16 +58,16 @@ class Module {
         $query = $this->db->query($sql);
         return $query->fetch_object()->count;
     }
-    
+
     public function getForumId() {
         if (!isset($this->forumId)) {
             $this->selectForumId();
         }
         return $this->forumId;
     }
-    
+
     /**
-     * 
+     *
      * @param Array $nameArray - numeric array with module names
      */
     public function getModulesWithName($nameArray) {
@@ -83,20 +83,20 @@ class Module {
             }
         }
         $sql .= ")";
-        
+
         $q = $this->db->query($sql);
         return $q;
     }
-    
+
     /***************************************************************************
      * GLOBAL GETTER & SETTER
      */
     public function __get($name) {
         return $this->$name;
     }
-    
+
     public function __set($name, $value) {
         $this->$name = $value;
     }
-    
+
 }

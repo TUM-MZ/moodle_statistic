@@ -1,9 +1,9 @@
 <?php
 /**
  * Organize all course categories to handle semester, faculties and further
- * institutions. Class course, module, semester, ... depends on the results of 
+ * institutions. Class course, module, semester, ... depends on the results of
  * these class
- * 
+ *
  */
 class Category {
 
@@ -104,7 +104,7 @@ class Category {
         }
         unset($curChilds);
         unset($curSem);
-        
+
         $otherSem = $this->getTopLevel(1);
         # The semester depth is two, because they inherits to other category
         $this->setActivePath($otherSem->path, 2);
@@ -142,7 +142,7 @@ class Category {
             if ($pos <= (count($this->topLevel) - 1)) {
                 return $this->topLevel[$pos];
             } else {
-                return $this->topLevel;
+                return array_slice($this->topLevel, -1)[0];
             }
         } else {
             return $this->topLevel;
@@ -154,7 +154,7 @@ class Category {
     # ==========================================================================
 
     /**
-     * fill the class array active and if semester category is given 
+     * fill the class array active and if semester category is given
      * add the semester object to semester class
      * @param string $pth
      * @param integer $semesterCat
@@ -163,12 +163,12 @@ class Category {
         $path = (trim($pth) !== '') ? $pth : $this->getActivePath();
 
         $query = $this->selectByPath($path, "ORDER BY path ASC, depth ASC");
-        
+
         while ($r = $query->fetch_object()) {
             $this->addActive($r);
 
-            if ($semesterCat && 
-                    is_numeric($semesterCat) && 
+            if ($semesterCat &&
+                    is_numeric($semesterCat) &&
                     intval($r->depth) === $semesterCat) {
                 $this->semester->addToAll($r);
             }
@@ -250,7 +250,7 @@ class Category {
         $this->updateActiveByPath('', $semesterDepth);
         $this->updateActiveChilds();
     }
-    
+
     /**
      * represents the selected object from dropdown choice
      * - used to filter for view

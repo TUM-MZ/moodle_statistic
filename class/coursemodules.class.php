@@ -127,22 +127,22 @@ class CourseModules {
                 $this->forumCoursesCat[$r->course][$r->id] = $r;
                 $forumIdStr .= ($forumIdStr === '') ? $r->id : ',' . $r->id;
             }
-            
+
             $sql = "SELECT DISTINCT(course)" .
                     " FROM " . $this->getForumClass()->dbPostsTable .
                     " WHERE forum IN (" . $forumIdStr . ")";
             $q = $this->db->query($sql);
-            
+
             $coursePostCount = $q->num_rows;
-            
-            // calc the sum of empty courses by: 
-            //   courses with only forum 
+
+            // calc the sum of empty courses by:
+            //   courses with only forum
             // - sum of courses with posts from courses with only forum
             $this->emptyForumCoursesCat = ($courseCount - $coursePostCount);
         }
     }
     /**
-     * returns a number of all courses which have only forums and 
+     * returns a number of all courses which have only forums and
      * the forums haven't posts
      * - depends on the selected category
      * @return int
@@ -238,11 +238,11 @@ class CourseModules {
 
     public function getSumOfAlls() {
         if ($this->course->getSumOfCat() > 0) {
-            $sql = "SELECT count(*) as sum FROM " .
+            $sql = "SELECT count(*) FROM " .
                     $this->dbTable .
                     " WHERE course IN (" . $this->course->getIDsString() . ")";
             $q = $this->db->query($sql);
-            return $q->fetch_object()->sum;
+            return $q->fetch_object()->count;
         }
         return 0;
     }
@@ -320,10 +320,18 @@ class CourseModules {
     public function findModuleCourseIdWithoutForum() {
         $sql = "SELECT * FROM " .
                 $this->dbTable .
-                "WHERE course NOT IN (SELECT DISTINCT(course) FROM " .
+                " WHERE course NOT IN (SELECT DISTINCT(course) FROM " .
                 $this->dbTable .
                 " WHERE module = " . $this->modules->getForumId() .
                 " ORDER BY course ASC)";
+        $query = $this->db->query($sql);
+
+        $courseWithoutForum = [];
+        while ($row = $query->fetch_object()) {
+            $courseWithoutForum[] = $row;
+        }
+
+        return $courseWithoutForum;
     }
 
     private function getForumClass() {

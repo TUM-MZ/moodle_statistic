@@ -93,7 +93,7 @@
 <style type="text/css">
     .attention_click {
         position: fixed;
-        display: inline-block; 
+        display: inline-block;
         top: 0px;
         left: 500px;
         width: 200px;

@@ -79,7 +79,7 @@ class Course {
             $this->updateAllCoursesFromCategories();
         }
 
-        $sql = $this->sqlSelectCount . $option . " LIMIT 0,1";
+        $sql = $this->sqlSelectCount . $option . " LIMIT 1";
         #echo $sql;
         $query = $this->db->query($sql);
         return $query->fetch_object()->count;
@@ -91,7 +91,7 @@ class Course {
 
     /**
      * returns global sum of courses
-     * @return integer 
+     * @return integer
      */
     public function getSumOf() {
         $count = $this->getSum(false);
@@ -102,11 +102,16 @@ class Course {
 
     /**
      * returns global sum of courses which are inside of faculties
-     * @return integer 
+     * @return integer
      */
     public function getSumOfFac() {
-        $cond = " AND category NOT IN (" .
-                $this->category->getNoFacultyIdString() . ")";
+        $no_faculty_string = $this->category->getNoFacultyIdString();
+        if (count($no_faculty_string) > 0) {
+            $cond = " AND category NOT IN ($no_faculty_string)";
+        } else {
+            $cond = "";
+        }
+
         $count = $this->getSum(false, $cond);
         $param = str_ireplace("getSumOf", "sumOf", __FUNCTION__) . 'Course';
         $this->addCourseModuleInfo($param, $count);
@@ -120,7 +125,7 @@ class Course {
 
     /**
      * returns global sum of visible courses
-     * @return integer 
+     * @return integer
      */
     public function getSumOfShown() {
         $cond = " AND visible = 1";
@@ -132,7 +137,7 @@ class Course {
 
     /**
      * returns global sum of visible courses which are inside of faculties
-     * @return integer 
+     * @return integer
      */
     public function getSumOfShownFac() {
         $cond = " AND visible = 1" .
@@ -151,11 +156,11 @@ class Course {
 
     /**
      * returns global sum of synchronized courses
-     * @return integer 
+     * @return integer
      */
     public function getSumOfSync() {
         $cond = " AND idnumber IS NOT NULL" .
-                " AND concat('', idnumber * 1) > 100000000";
+                " AND idnumber like '9%'";
         $count = $this->getSum(false, $cond);
         $param = str_ireplace("getSumOf", "sumOf", __FUNCTION__) . 'Course';
         $this->addCourseModuleInfo($param, $count);
@@ -164,11 +169,11 @@ class Course {
 
     /**
      * returns global sum of synchronized courses which are inside of faculties
-     * @return integer 
+     * @return integer
      */
     public function getSumOfSyncFac() {
         $cond = " AND idnumber IS NOT NULL" .
-                " AND concat('', idnumber * 1) > 100000000" .
+                " AND idnumber like '9%'" .
                 " AND category NOT IN (" .
                 $this->category->getNoFacultyIdString() . ")";
         $count = $this->getSum(false, $cond);
@@ -184,12 +189,12 @@ class Course {
 
     /**
      * returns global sum of visible synchronized courses
-     * @return integer 
+     * @return integer
      */
     public function getSumOfSyncShown() {
         $cond = " AND visible = 1" .
                 " AND idnumber IS NOT NULL" .
-                " AND concat('', idnumber * 1) > 100000000";
+                " AND idnumber like '9%'";
         $count = $this->getSum(false, $cond);
         $param = str_ireplace("getSumOf", "sumOf", __FUNCTION__) . 'Course';
         $this->addCourseModuleInfo($param, $count);
@@ -198,13 +203,13 @@ class Course {
 
     /**
      * returns global sum of visible synchronized courses which are inside of faculties
-     * @return integer 
+     * @return integer
      */
     public function getSumOfSyncShownFac() {
         if ($this->category->getFacultyIdString()) {
             $cond = " AND visible = 1" .
                     " AND idnumber IS NOT NULL" .
-                    " AND concat('', idnumber * 1) > 100000000" .
+                    " AND idnumber like '9%'" .
                     " AND category NOT IN (" .
                     $this->category->getNoFacultyIdString() . ")";
             $count = $this->getSum(false, $cond);
@@ -282,12 +287,12 @@ class Course {
 
     /**
      * returns category sum of synchronized courses
-     * @return integer 
+     * @return integer
      */
     public function getSumOfCatSync() {
 
         $cond = " AND idnumber IS NOT NULL" .
-                " AND concat('', idnumber * 1) > 100000000" .
+                " AND idnumber like '9%'" .
                 " AND category in (" .
                 $this->category->getActiveIdsString() . ")";
         $count = $this->getSum(false, $cond);
@@ -298,12 +303,12 @@ class Course {
 
     /**
      * returns category sum of synchronized courses which are inside of faculties
-     * @return integer 
+     * @return integer
      */
     public function getSumOfCatSyncFac() {
         if ($this->category->getFacultyIdString()) {
             $cond = " AND idnumber IS NOT NULL" .
-                    " AND concat('', idnumber * 1) > 100000000" .
+                    " AND idnumber like '9%'" .
                     " AND category in (" .
                     $this->category->getFacultyIdString() . ")" .
                     " AND category NOT IN (" .
@@ -324,12 +329,12 @@ class Course {
 
     /**
      * returns category sum of visible synchronized courses
-     * @return integer 
+     * @return integer
      */
     public function getSumOfCatSyncShown() {
         $cond = " AND visible = 1" .
                 " AND idnumber IS NOT NULL" .
-                " AND concat('', idnumber * 1) > 100000000" .
+                " AND idnumber like '9%'" .
                 " AND category in (" .
                 $this->category->getActiveIdsString() . ")";
         $count = $this->getSum(false, $cond);
@@ -340,13 +345,13 @@ class Course {
 
     /**
      * returns category sum of visible synchronized courses which are inside of faculties
-     * @return integer 
+     * @return integer
      */
     public function getSumOfCatSyncShownFac() {
         if ($this->category->getFacultyIdString()) {
             $cond = " AND visible = 1" .
                     " AND idnumber IS NOT NULL" .
-                    " AND concat('', idnumber * 1) > 100000000" .
+                    " AND idnumber like '9%'" .
                     " AND category in (" .
                     $this->category->getFacultyIdString() . ")" .
                     " AND category NOT IN (" .

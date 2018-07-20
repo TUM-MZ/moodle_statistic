@@ -1,18 +1,6 @@
 <?php
 $legendText = '';
 $default = null;
-
-require_once(__DIR__ . "/../../config.php");
-require_once($CFG->dirroot . '/moodle_statistic/class/block.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/category.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/course.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/coursemodules.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/db.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/forum.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/module.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/modulecluster.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/semester.class.php');
-require_once($CFG->dirroot . '/moodle_statistic/class/user.class.php');
 ?>
 <header>
     <div class="action-panel" style="text-align:right;">
