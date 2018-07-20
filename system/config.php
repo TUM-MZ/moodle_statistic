@@ -1,23 +1,29 @@
 <?php
 # ==============================================================================
-# START MOODLE CONTEXT
-$mdl_configFile = $_SERVER['DOCUMENT_ROOT'] . "/config.php";
+require_once(__DIR__ . "/../../config.php");
+require_once($CFG->libdir . '/adminlib.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/block.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/category.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/course.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/coursemodules.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/db.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/forum.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/module.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/modulecluster.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/semester.class.php');
+require_once($CFG->dirroot . '/moodle_statistic/class/user.class.php');
 
 
-if (file_exists($mdl_configFile)) {
-    require_once $mdl_configFile;
-    require_once($CFG->libdir . '/adminlib.php');
+require_login();
+require_capability('moodle/site:config', context_system::instance());
 
-    require_login();
-    require_capability('moodle/site:config', context_system::instance());
-}
 # END MOODLE CONTEXT
 # ==============================================================================
 
 
 # ==============================================================================
 # PREFIX
-# 
+#
 // define the used database table prefix
 if (isset($CFG)) {
     define("DB_TABLE_PREFIX", $CFG->prefix);
@@ -32,8 +38,8 @@ define("FOREIGN_FACULTY_PREFIX", "further");
 
 # ==============================================================================
 # MODULE CONFIG
-# 
-# if the name of one module changes in moodle, modify the value here to get 
+#
+# if the name of one module changes in moodle, modify the value here to get
 # the right relation for dictionary and module clustering
 $MODULE_NAMES = [
     'adobeconnect' => 'adobeconnect',
@@ -147,17 +153,6 @@ $DICT_CLUSTERNAME = [
     'grading' => 'Bewertung'
 ];
 
-
-# ==============================================================================
-# CLASSES - INSTANCES
-// magic function to load classes dynamicaly
-function classAutoloader($class_name) {
-    include 'class/' . strtolower($class_name) . '.class.php';
-}
-
-// register auto loader function
-spl_autoload_register("classAutoloader");
-
 // create instances of all classes
 /*
  * class hierachy:
@@ -171,7 +166,7 @@ spl_autoload_register("classAutoloader");
  * --- forum
  * --- modulecluster
  * --- ...
- * 
+ *
  */
 $db = DB::getInstance();
 $user = User::getInstance();
@@ -192,6 +187,6 @@ $moduleCluster = ModuleCluster::getInstance();
 
 # ==============================================================================
 # ADDITIONAL FUNCTIONS
-# 
+#
 // include default / additional functions
 include_once './system/function.php';
